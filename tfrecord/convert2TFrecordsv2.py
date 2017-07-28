@@ -11,7 +11,7 @@ import sys
 import os
 
 # data for train & validate
-FRACTION=0.6
+FRACTION=0.5
 
 if len(sys.argv) > 2:
         input_dir = sys.argv[1]
@@ -100,7 +100,7 @@ def _createTF(filename, dataset, _labels):
 	    image_format = 'JPEG'
 	    height = image_buffer.shape[0]
 	    width = image_buffer.shape[1]
-	    text = "dog" if label == 1 else "cat"
+	    text = labelNames[label]
 
 	    # Create a feature
 	    feature={ 'image/height': _int64_feature(height),
