@@ -8,7 +8,7 @@ cd isdlhackathon
 
 ``` ./raw/convert2Raw.py <input_directory> <output_directory> ```
 
-### To convert a directory of images(jpg) into TensforRecords,
+### To convert a directory of images(jpg) into TensorflowRecords,
 
 ``` ./tfrecord/convert2TFrecordsv2.py <input_directory> <output_directory> ```
 
