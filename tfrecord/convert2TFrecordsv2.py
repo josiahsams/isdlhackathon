@@ -125,6 +125,5 @@ def _createTF(filename, dataset, _labels):
 _createTF('train-00000-of-00001', train_addrs,  train_labels)
 _createTF('validation-00000-of-00001', val_addrs, val_labels)
 
-print("Dump the TFRecords into a file")
-
+print("Completed TFRecords file creation !!")
 
