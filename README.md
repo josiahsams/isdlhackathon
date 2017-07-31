@@ -76,3 +76,5 @@ Reference [link](http://caffe.berkeleyvision.org/gathered/examples/imagenet.html
 ### To convert a directory of images(jpg) into Raw format,
 
 ``` ./raw/convert2Raw.py <input_directory> <output_directory> ```
+
+Note: For image conversion we use "cv2" python library.
