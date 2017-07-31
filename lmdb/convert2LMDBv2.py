@@ -12,8 +12,11 @@ import os
 import re
 from commonutils import cmd_exists
 
-# data for train & validate
-FRACTION=0.5
+# data split for train & validate
+SPLIT=0.5
+
+# data fraction for experiment purpose
+FRACTION=1
 
 if len(sys.argv) > 3:
         input_dir = sys.argv[1]
@@ -23,6 +26,12 @@ else:
         input_dir = '/home/hack17/cd/train/'
         output_dir = '/home/hack17/joe/lmdb/'
 	prefix="dogcat"
+
+if len(sys.argv) > 4:
+	SPLIT=float(sys.argv[4])
+
+if len(sys.argv) > 5:
+	FRACTION=float(sys.argv[5])
 
 if (not cmd_exists("convert_imageset") or not cmd_exists("compute_image_mean")):
 	print("Make sure caffe tools are in PATH")
@@ -52,6 +61,9 @@ for root, subFolders, files in os.walk(input_dir):
         cat_dog_train_path = filename
         addrs = addrs + glob.glob(cat_dog_train_path)
 
+print("No. of samples selected for Train is {} out of {}".format(int(SPLIT*FRACTION*len(addrs)), len(addrs)))
+print("No. of samples selected for Validation is {} out of {}".format(len(addrs)-int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)), len(addrs)))
+
 # labels = [0 if 'cat' in addr else 1 for addr in addrs]
 labels = [ labelNames.index(lab) for lab in labelNames  for addr in addrs if lab in addr ]
 
@@ -63,10 +75,12 @@ if shuffle_data:
     addrs, labels = zip(*c)
 
 
-train_addrs = addrs[:int(FRACTION*len(addrs))]
-train_labels = labels[:int(FRACTION*len(labels))]
-val_addrs = addrs[int((1-FRACTION)*len(addrs)):]
-val_labels = labels[int((1-FRACTION)*len(labels)):]
+train_addrs = addrs[:int(SPLIT*FRACTION*len(addrs))]
+train_labels = labels[:int(SPLIT*FRACTION*len(labels))]
+#val_addrs = addrs[int((1-FRACTION)*len(addrs)):]
+#val_labels = labels[int((1-FRACTION)*len(labels)):]
+val_addrs = addrs[int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)):]
+val_labels = labels[int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)):]
 
 train_addrs_labels = zip(train_addrs, val_labels)
 val_addrs_labels = zip(val_addrs, val_labels)

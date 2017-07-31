@@ -10,8 +10,11 @@ from random import shuffle
 import sys
 import os
 
-# data for train & validate
-FRACTION=0.5
+# data split for train & validate
+SPLIT=0.5
+
+# data fraction for experiment purpose
+FRACTION=1
 
 if len(sys.argv) > 2:
         input_dir = sys.argv[1]
@@ -19,6 +22,12 @@ if len(sys.argv) > 2:
 else:
         input_dir = '/home/hack17/cd/train/'
         output_dir = '/home/hack17/joe/tfrecord/'
+
+if len(sys.argv) > 3:
+        SPLIT=float(sys.argv[3])
+
+if len(sys.argv) > 4:
+        FRACTION=float(sys.argv[4])
 
 print('Convert {}*.jpg files to TFRecord and place it in {}'.format(input_dir, output_dir))
 
@@ -31,6 +40,9 @@ for root, subFolders, files in os.walk(input_dir):
         filename=root+'/*.jpg'
         cat_dog_train_path = filename
         addrs = addrs + glob.glob(cat_dog_train_path)
+
+print("No. of samples selected for Train is {} out of {}".format(int(SPLIT*FRACTION*len(addrs)), len(addrs)))
+print("No. of samples selected for Validation is {} out of {}".format(len(addrs)-int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)), len(addrs)))
 
 # Read labels
 labelNames = []
@@ -55,8 +67,11 @@ if shuffle_data:
 train_addrs = addrs[0:int(FRACTION*len(addrs))]
 train_labels = labels[0:int(FRACTION*len(labels))]
 
-val_addrs = addrs[int((1-FRACTION)*len(addrs)):]
-val_labels = labels[int((1-FRACTION)*len(labels)):]
+val_addrs = addrs[int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)):]
+val_labels = labels[int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)):]
+
+# val_addrs = addrs[int((1-FRACTION)*len(addrs)):]
+# val_labels = labels[int((1-FRACTION)*len(labels)):]
 
 def load_image(addr):
     # read an image and resize to (224, 224)

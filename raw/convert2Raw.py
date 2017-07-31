@@ -9,12 +9,24 @@ from random import shuffle
 import sys
 import os
 
+# data split for train & validate
+SPLIT=0.5
+
+# data fraction for experiment purpose
+FRACTION=0.01
+
 if len(sys.argv) > 2:
 	input_dir = sys.argv[1]
 	output_dir = sys.argv[2]
 else:
 	input_dir = '/home/hack17/cd/train/'
 	output_dir = '/home/hack17/joe/raw/'
+
+if len(sys.argv) > 3:
+        SPLIT=float(sys.argv[3])
+
+if len(sys.argv) > 4:
+        FRACTION=float(sys.argv[4])
 
 print('Convert {}*.jpg files to raw and place it in {}'.format(input_dir, output_dir))
 
@@ -24,13 +36,20 @@ for root, subFolders, files in os.walk(input_dir):
  	filename=root+'/*.jpg'
 	newpath=root.split(input_dir)[1]
 	if not os.path.exists(output_dir+'/'+newpath+'/'):
-	    print("creating DIR " + newpath)
 	    os.makedirs(output_dir+'/'+newpath)
 	cat_dog_train_path = filename
- 	print(filename)
 	addrs = addrs + glob.glob(cat_dog_train_path)
 
-labels = [0 if 'cat' in addr else 1 for addr in addrs]
+# Read labels
+labelNames = []
+with open(input_dir + '/labels.txt') as f:
+        labelNames =  f.readlines()
+
+labelNames =  [x.strip() for x in labelNames]
+
+print(labelNames)
+
+labels = [ labelNames.index(lab) for lab in labelNames  for addr in addrs if lab in addr ]
 
 shuffle_data = True
 # to shuffle data
@@ -39,8 +58,14 @@ if shuffle_data:
     shuffle(c)
     addrs, labels = zip(*c)
 
-train_addrs = addrs[0:int(0.001*len(addrs))]
-train_labels = labels[0:int(0.001*len(labels))]
+print("No. of samples selected for Train is {} out of {}".format(int(SPLIT*FRACTION*len(addrs)), len(addrs)))
+print("No. of samples selected for Validation is {} out of {}".format(len(addrs)-int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)), len(addrs)))
+
+train_addrs = addrs[0:int(SPLIT*FRACTION*len(addrs))]
+train_labels = labels[0:int(SPLIT*FRACTION*len(labels))]
+
+val_addrs = addrs[int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)):]
+val_labels = labels[int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)):]
 
 def load_image(addr):
     # read an image and resize to (224, 224)
@@ -51,19 +76,37 @@ def load_image(addr):
     img = img.astype(np.float32)
     return img
 
-for i in range(len(train_addrs)):
+with open(output_dir+"/train.txt", "w") as trainfile:
+    for i in range(len(train_addrs)):
 	newpath=train_addrs[i].split(input_dir)[1]
 	fileName = train_addrs[i].rsplit('/',1)[1].rsplit('.',1)[0]
 	subpath = newpath.split(fileName)[0] + '/'
  	outFile = output_dir + subpath + fileName + '.raw'
-	print(outFile)
 	with open(outFile, "wb") as output_file:
 	    # print how many images are saved every 1000 images
 	    if not i % 1000:
 		print 'Convert data: {}/{}'.format(i, len(train_addrs))
 		sys.stdout.flush()
+            trainfile.write('{} {}\n'.format(subpath+ fileName + '.raw', train_labels[i]))
 	    # Load the image
 	    img = load_image(train_addrs[i])
+            cPickle.dump(img, output_file)
+
+
+with open(output_dir+"/validate.txt", "w") as valfile:
+    for i in range(len(val_addrs)):
+        newpath=val_addrs[i].split(input_dir)[1]
+        fileName = val_addrs[i].rsplit('/',1)[1].rsplit('.',1)[0]
+        subpath = newpath.split(fileName)[0] + '/'
+        outFile = output_dir + subpath + fileName + '.raw'
+        valfile.write('{} {}\n'.format(subpath+ fileName + '.raw', val_labels[i]))
+        with open(outFile, "wb") as output_file:
+            # print how many images are saved every 1000 images
+            if not i % 1000:
+                print 'Convert data: {}/{}'.format(i, len(val_addrs))
+                sys.stdout.flush()
+            # Load the image
+            img = load_image(val_addrs[i])
             cPickle.dump(img, output_file)
 
 print('Conversion Done!!')
