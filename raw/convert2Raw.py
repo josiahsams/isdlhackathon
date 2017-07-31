@@ -28,6 +28,15 @@ if len(sys.argv) > 3:
 if len(sys.argv) > 4:
         FRACTION=float(sys.argv[4])
 
+
+if SPLIT > 1.0:
+        print("SPLIT can not be greater than 1.0")
+        sys.exit()
+
+if FRACTION > 1.0:
+        print("FRACTION can not be greater than 1.0")
+        sys.exit()
+
 print('Convert {}*.jpg files to raw and place it in {}'.format(input_dir, output_dir))
 
 addrs=[]

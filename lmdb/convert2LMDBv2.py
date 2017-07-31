@@ -37,6 +37,14 @@ if (not cmd_exists("convert_imageset") or not cmd_exists("compute_image_mean")):
 	print("Make sure caffe tools are in PATH")
 	sys.exit()
 
+if SPLIT > 1.0:
+	print("SPLIT can not be greater than 1.0")
+	sys.exit()
+
+if FRACTION > 1.0:
+        print("FRACTION can not be greater than 1.0")
+        sys.exit()
+
 DATA_DIR=input_dir
 TXT_DIR=output_dir
 
