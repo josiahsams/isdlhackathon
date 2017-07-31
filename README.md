@@ -4,6 +4,26 @@ git clone https://github.com/josiahsams/isdlhackathon
 
 cd isdlhackathon
 
+### Prereqs:
+
+To enable Tensorflow framework in the environment you need to run the following command after installing Tensorflow:
+```
+$ source /opt/DL/tensorflow/bin/tensorflow-activate
+```
+To enable Caffe framework in the environment you need to run the following command after installing Caffe:
+```
+$ source /opt/DL/caffe-ibm/bin/caffe-activate
+```
+
+The input_directory should have the image files extracted and a file named "labels.txt". The "labels.txt" should 
+list all the predefined labels the dataset is classified in the newline separated style as follows,
+
+```
+cat <input_directory>/labels.txt
+cats
+dogs
+```
+
 ### To convert a directory of images(jpg) into TensorflowRecords,
 
 ``` ./tfrecord/convert2TFrecordsv2.py <input_directory> <output_directory> ```
