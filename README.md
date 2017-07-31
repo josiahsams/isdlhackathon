@@ -26,7 +26,13 @@ dogs
 
 ### To convert a directory of images(jpg) into TensorflowRecords,
 
-``` ./tfrecord/convert2TFrecordsv2.py <input_directory> <output_directory> ```
+``` ./tfrecord/convert2TFrecordsv2.py <input_directory> <output_directory> <split> <fraction>```
+
+* split & fraction are optional parameters.
+* Split denotes the train & validation data split (default 0.5 - 50& train & 50% validation data split)
+* If split is .75 then train data is 75% and validation data is 20% of the entire dataset.
+* Fraction is used for experimentation and indicated the amount of total dataset to be processed (default 1 - 100% data is processed)
+* both should be less or equal to 1
 
 On completion, the `output directory` will have files as follows,
 ```
@@ -52,7 +58,13 @@ Reference [link](https://github.com/tensorflow/models/tree/master/inception)
 
 ### To convert a directory of images(jpg) into LMDB(caffe),
 
-``` ./lmdb/convert2LMDBv2.py <input_directory> <output_directory> <prefix> ```
+``` ./lmdb/convert2LMDBv2.py <input_directory> <output_directory> <prefix> <split> <fraction>```
+
+* split & fraction are optional parameters.
+* Split denotes the train & validation data split (default 0.5 - 50& train & 50% validation data split)
+* If split is .75 then train data is 75% and validation data is 20% of the entire dataset.
+* Fraction is used for experimentation and indicated the amount of total dataset to be processed (default 1 - 100% data is processed)
+* both should be less or equal to 1
 
 On completion, the output directory will have files as follows,
 ```
@@ -75,6 +87,27 @@ Reference [link](http://caffe.berkeleyvision.org/gathered/examples/imagenet.html
 
 ### To convert a directory of images(jpg) into Raw format,
 
-``` ./raw/convert2Raw.py <input_directory> <output_directory> ```
+``` ./raw/convert2Raw.py <input_directory> <output_directory> <split> <fraction>```
+
+* split & fraction are optional parameters.
+* Split denotes the train & validation data split (default 0.5 - 50& train & 50% validation data split)
+* If split is .75 then train data is 75% and validation data is 20% of the entire dataset.
+* Fraction is used for experimentation and indicated the amount of total dataset to be processed (default 1 - 100% data is processed)
+* both should be less or equal to 1
+
+On completion, 2 files named `train.txt` and `validate.txt` are created in the output directory.
+They hold the file path with the label indexes for the files part of training & validation sets.
+The content is as follows,
+
+```
+hack17@fsmldlpar7:~/joe/repo/raw$ cat /home/hack17/joe/raw/train.txt
+dir1/dir2/cat.2976.raw 1
+dir1/dir2/cat.3666.raw 1
+dir1/cat.8294.raw 0
+/dog.3193.raw 0
+dir1/cat.965.raw 1
+dir1/cat.6546.raw 1
+```
 
 Note: For image conversion we use "cv2" python library.
+
