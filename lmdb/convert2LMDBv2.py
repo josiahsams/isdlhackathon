@@ -90,7 +90,7 @@ train_labels = labels[:int(SPLIT*FRACTION*len(labels))]
 val_addrs = addrs[int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)):]
 val_labels = labels[int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)):]
 
-train_addrs_labels = zip(train_addrs, val_labels)
+train_addrs_labels = zip(train_addrs, train_labels)
 val_addrs_labels = zip(val_addrs, val_labels)
 
 with open('{}/train.txt'.format(TXT_DIR), 'w') as f:
