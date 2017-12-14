@@ -12,6 +12,11 @@ import os
 import re
 from commonutils import cmd_exists
 
+# image size after resize ;
+# resized images are used for training & testing
+img_height = 227
+img_width = 227
+
 # data split for train & validate
 SPLIT=0.5
 
@@ -64,16 +69,25 @@ print(labelNames)
 
 addrs=[]
 tmp_output_dir = output_dir
+
+# File extensions to look for
+extns = [ '/*.jpeg' , '/*.jpg', '/*.png']
 for root, subFolders, files in os.walk(input_dir):
-        filename=root+'/*.jpg'
-        cat_dog_train_path = filename
-        addrs = addrs + glob.glob(cat_dog_train_path)
+    for extn in extns:
+        filename=root + extn
+        full_input_path = filename
+        addrs = addrs + glob.glob(full_input_path)
 
 print("No. of samples selected for Train is {} out of {}".format(int(SPLIT*FRACTION*len(addrs)), len(addrs)))
 print("No. of samples selected for Validation is {} out of {}".format(len(addrs)-int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)), len(addrs)))
 
+#ignore the root input directory to look for labels:
+ignore_len = len(input_dir)
+if (input_dir[-1] != "/"):
+    ignore_len = ignore_len + 1
+
 # labels = [0 if 'cat' in addr else 1 for addr in addrs]
-labels = [ labelNames.index(lab) for lab in labelNames  for addr in addrs if lab in addr ]
+labels = [ labelNames.index(lab) for lab in labelNames  for addr in addrs if lab in addr[ignore_len:] ]
 
 shuffle_data = True
 # to shuffle data
@@ -85,12 +99,15 @@ if shuffle_data:
 
 train_addrs = addrs[:int(SPLIT*FRACTION*len(addrs))]
 train_labels = labels[:int(SPLIT*FRACTION*len(labels))]
+
 #val_addrs = addrs[int((1-FRACTION)*len(addrs)):]
 #val_labels = labels[int((1-FRACTION)*len(labels)):]
 val_addrs = addrs[int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)):]
 val_labels = labels[int(len(addrs)*(1 -FRACTION + FRACTION* SPLIT)):]
+print("train_addrs : {} train_labels : {}". format(len(train_addrs), len(train_labels)))
+print("val_addrs : {} val_labels : {}". format(len(val_addrs), len(val_labels)))
 
-train_addrs_labels = zip(train_addrs, val_labels)
+train_addrs_labels = zip(train_addrs, train_labels)
 val_addrs_labels = zip(val_addrs, val_labels)
 
 with open('{}/train.txt'.format(TXT_DIR), 'w') as f:
@@ -109,7 +126,7 @@ outpdir=TXT_DIR
 traindata=DATA_DIR
 valdata=DATA_DIR
 
-call(['bash', 'create_imagenet.sh', prefix, inputdir, outpdir, traindata, valdata])
+call(['bash', 'create_imagenet.sh', prefix, inputdir, outpdir, traindata, valdata, 'true', str(img_height), str(img_width)])
 
 print("Conversion complete. LMDB files can be found under {} !!".format(outpdir))
 
@@ -121,7 +138,9 @@ print("Mean image file created under {} !!".format(outpdir))
 dict = {
     "OUTPUT_DIR" : outpdir,
     "NUM_LABELS" : str(len(labelNames)),
-    "PREFIX"     : prefix
+    "PREFIX"     : prefix,
+    "HEIGHT"     : str(img_height),
+    "WIDTH"      : str(img_width)
 } 
 
 def multiple_replace(dict, text):
@@ -133,9 +152,9 @@ def multiple_replace(dict, text):
 
 path = os.path.dirname(os.path.realpath(__file__))
 
-with open(path+"/train_val.prototxt.template") as text:
+with open(path+"/train_test.prototxt.template") as text:
     new_text = multiple_replace(dict, text.read())
-with open(outpdir+"/train_val.prototxt", "w") as result:
+with open(outpdir+"/train_test.prototxt", "w") as result:
     result.write(new_text)
 
 with open(path+"/solver.prototxt.template") as text:
@@ -143,7 +162,13 @@ with open(path+"/solver.prototxt.template") as text:
 with open(outpdir+"/solver.prototxt", "w") as result:
     result.write(new_text)
 
-print("train_val.prototxt & solver.prototxt files are created under {} !!".format(outpdir))
+with open(path+"/inference.prototxt.template") as text:
+    new_text = multiple_replace(dict, text.read())
+with open(outpdir+"/inference.prototxt", "w") as result:
+    result.write(new_text)
+
+
+print("train_test.prototxt & solver.prototxt & inference.prototxt files are created under {} !!".format(outpdir))
 
 
 

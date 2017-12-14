@@ -1,41 +1,10 @@
 name: "AlexNet"
-layer {
-  name: "data"
-  type: "Data"
-  top: "data"
-  top: "label"
-  include {
-    phase: TRAIN
-  }
-  transform_param {
-    mirror: true
-    crop_size: 227
-    mean_file: "OUTPUT_DIR/PREFIX_mean.binaryproto"
-  }
-  data_param {
-    source: "OUTPUT_DIR/PREFIX_train_lmdb"
-    batch_size: 256
-    backend: LMDB
-  }
-}
-layer {
-  name: "data"
-  type: "Data"
-  top: "data"
-  top: "label"
-  include {
-    phase: TEST
-  }
-  transform_param {
-    mirror: false
-    crop_size: 227 
-    mean_file: "OUTPUT_DIR/PREFIX_mean.binaryproto" 
-  }
-  data_param {
-    source: "OUTPUT_DIR/PREFIX_val_lmdb"
-    batch_size: 50
-    backend: LMDB
-  }
+input: "data"
+input_shape {
+  dim: 1
+  dim: 3
+  dim: HEIGHT
+  dim: WIDTH
 }
 layer {
   name: "conv1"
@@ -366,19 +335,8 @@ layer {
   }
 }
 layer {
-  name: "accuracy"
-  type: "Accuracy"
+  name: "prob"
+  type: "Softmax"
   bottom: "fc8"
-  bottom: "label"
-  top: "accuracy"
-  include {
-    phase: TEST
-  }
-}
-layer {
-  name: "loss"
-  type: "SoftmaxWithLoss"
-  bottom: "fc8"
-  bottom: "label"
-  top: "loss"
+  top: "prob"
 }

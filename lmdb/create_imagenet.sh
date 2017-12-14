@@ -3,7 +3,7 @@
 # N.B. set the path to the imagenet train + val data dirs
 set -e
 
-if [[ $# -ne 5 ]]; then 
+if [[ $# -ne 8 ]]; then 
 	echo "Not sufficient arguments"
 	exit
 fi
@@ -25,16 +25,24 @@ TOOLS=./build/tools
 fi
 
 TRAIN_DATA_ROOT=$4
-VAL_DATA_ROOT=$5
+TEST_DATA_ROOT=$5
+
+if [[ $6 -eq 'true' ]]; then
+    RESIZE=true
+else
+    RESIZE=false
+fi
+IMG_HEIGHT=$7
+IMG_WIDTH=$8
 #TRAIN_DATA_ROOT=/home/hack17/cd/train/
-#VAL_DATA_ROOT=/home/hack17/cd/train/
+#TEST_DATA_ROOT=/home/hack17/cd/train/
 
 # Set RESIZE=true to resize the images to 256x256. Leave as false if images have
 # already been resized using another tool.
-RESIZE=true
+
 if $RESIZE; then
-  RESIZE_HEIGHT=256
-  RESIZE_WIDTH=256
+  RESIZE_HEIGHT=$IMG_HEIGHT
+  RESIZE_WIDTH=$IMG_WIDTH
 else
   RESIZE_HEIGHT=0
   RESIZE_WIDTH=0
@@ -47,9 +55,9 @@ if [ ! -d "$TRAIN_DATA_ROOT" ]; then
   exit 1
 fi
 
-if [ ! -d "$VAL_DATA_ROOT" ]; then
-  echo "Error: VAL_DATA_ROOT is not a path to a directory: $VAL_DATA_ROOT"
-  echo "Set the VAL_DATA_ROOT variable in create_imagenet.sh to the path" \
+if [ ! -d "$TEST_DATA_ROOT" ]; then
+  echo "Error: TEST_DATA_ROOT is not a path to a directory: $TEST_DATA_ROOT"
+  echo "Set the TEST_DATA_ROOT variable in create_imagenet.sh to the path" \
        "where the ImageNet validation data is stored."
   exit 1
 fi
@@ -67,13 +75,13 @@ GLOG_logtostderr=1 $TOOLS/convert_imageset \
 
 echo "Creating val lmdb..."
 
-rm -rf $EXAMPLE/${prefix}_val_lmdb
+rm -rf $EXAMPLE/${prefix}_test_lmdb
 GLOG_logtostderr=1 $TOOLS/convert_imageset \
     --resize_height=$RESIZE_HEIGHT \
     --resize_width=$RESIZE_WIDTH \
     --shuffle \
-    $VAL_DATA_ROOT \
+    $TEST_DATA_ROOT \
     $DATA/test.txt \
-    $EXAMPLE/${prefix}_val_lmdb
+    $EXAMPLE/${prefix}_test_lmdb
 
 echo "Done."
